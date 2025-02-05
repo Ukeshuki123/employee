@@ -1,0 +1,22 @@
+{
+    "status": "success",
+    "timestamp": "2024-12-19T12:00:00Z",
+    "message": "Operation completed successfully",
+    "data": {
+        "user": {
+            "id": 12345,
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "roles": ["admin", "editor"],
+            "isActive": true
+        },
+        "meta": {
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 10,
+                "pageSize": 25,
+                "totalRecords": 250
+            }
+        }
+    }
+}

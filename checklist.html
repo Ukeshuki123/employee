@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Checklist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .question-item {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            background-color: #fff;
+        }
+        .response-card {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            background-color: #f8f9fa;
+        }
+        .section-card {
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .section-header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            border-bottom: 3px solid #0d6efd;
+        }
+        .response-filters {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        #alertMessage {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+            .section-card {
+                margin-bottom: 1rem;
+            }
+            .response-filters {
+                flex-direction: column;
+            }
+            .response-filters .btn-group {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Employee Checklist System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="employee.html">
+                            <i class="fas fa-users"></i> Employees
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="checklist.html">
+                            <i class="fas fa-tasks"></i> Checklist
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="responses.html">
+                            <i class="fas fa-clipboard-check"></i> Responses
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3">Welcome, <span id="userInfo"></span></span>
+                    <button class="btn btn-outline-light" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="alertMessage" class="alert" role="alert" style="display: none;"></div>
+
+        <!-- User View: Checklist Form -->
+        <div id="userView">
+            <form id="checklistForm">
+                <div class="row">
+                    <!-- Kitchen Section -->
+                    <div class="col-md-6">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h3 class="mb-0">Kitchen Checklist</h3>
+                            </div>
+                            <div class="card-body" id="kitchenQuestions"></div>
+                        </div>
+                    </div>
+
+                    <!-- Cafe Section -->
+                    <div class="col-md-6">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h3 class="mb-0">Cafe Checklist</h3>
+                            </div>
+                            <div class="card-body" id="cafeQuestions"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Submit Checklist</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Admin View: Responses -->
+        <div id="adminView" style="display: none;">
+            <h2 class="mb-4">Checklist Responses</h2>
+            
+            <!-- Filter Tabs -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#yesTab">Yes Responses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#noTab">No Responses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#pendingTab">Pending Responses</a>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="yesTab">
+                    <div id="yesResponses"></div>
+                </div>
+                <div class="tab-pane fade" id="noTab">
+                    <div id="noResponses"></div>
+                </div>
+                <div class="tab-pane fade" id="pendingTab">
+                    <div id="pendingResponses"></div>
+                </div>
+            </div>
+
+            <div id="writtenResponsesSection" style="display: none;">
+                <h2 class="mb-4">Written Responses</h2>
+                <div id="kitchenWrittenResponses"></div>
+                <div id="cafeWrittenResponses"></div>
+            </div>
+
+            <div id="mcqResponsesSection">
+                <h2 class="mb-4">MCQ Responses</h2>
+                <div id="mcqResponses"></div>
+            </div>
+
+            <div class="response-filters">
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="responseType" id="mcqRadio" value="mcq" checked>
+                    <label class="btn btn-outline-primary" for="mcqRadio">MCQ Responses</label>
+                    <input type="radio" class="btn-check" name="responseType" id="writtenRadio" value="written">
+                    <label class="btn btn-outline-primary" for="writtenRadio">Written Responses</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let questions = [];
+        let userRole = '';
+
+        // Check authentication and load appropriate content
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Set user info
+            const username = localStorage.getItem('username');
+            const role = localStorage.getItem('role');
+            const branch = localStorage.getItem('branch');
+            
+            document.getElementById('userInfo').textContent = `${username} (${branch})`;
+
+            // Show/hide admin features
+            if (role === 'admin') {
+                document.getElementById('responsesNavItem').style.display = 'block';
+            }
+
+            // Load initial view
+            await loadQuestions();
+        }
+
+        // Load checklist questions
+        async function loadQuestions() {
+            try {
+                const response = await fetch('/api/checklist/questions', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                
+                if (!data.success) {
+                    showAlert(data.message, 'danger');
+                    return;
+                }
+
+                questions = data.questions;
+                displayQuestions();
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                showAlert('Failed to load questions', 'danger');
+            }
+        }
+
+        // Display questions
+        function displayQuestions() {
+            const kitchenQuestions = questions.filter(q => q.section === 'Kitchen');
+            const cafeQuestions = questions.filter(q => q.section === 'Cafe');
+
+            document.getElementById('kitchenQuestions').innerHTML = `
+                <div class="section-header">
+                    <h3>Kitchen Section</h3>
+                </div>
+                <div class="p-3">
+                    ${generateSectionQuestions(kitchenQuestions)}
+                </div>
+            `;
+
+            document.getElementById('cafeQuestions').innerHTML = `
+                <div class="section-header">
+                    <h3>Cafe Section</h3>
+                </div>
+                <div class="p-3">
+                    ${generateSectionQuestions(cafeQuestions)}
+                </div>
+            `;
+        }
+
+        // Generate questions for a section
+        function generateSectionQuestions(questions) {
+            return questions.map(q => `
+                <div class="question-item" data-question-id="${q.id}" data-type="${q.type}" data-question="${q.question}">
+                    <p class="mb-3"><strong>${q.question}</strong></p>
+                    ${q.type === 'written' 
+                        ? `<textarea class="form-control" rows="3" required></textarea>`
+                        : `<div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="q${q.id}" id="q${q.id}_yes" value="yes" required>
+                            <label class="btn btn-outline-success" for="q${q.id}_yes">
+                                <i class="fas fa-check"></i> Yes
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="q${q.id}" id="q${q.id}_no" value="no">
+                            <label class="btn btn-outline-danger" for="q${q.id}_no">
+                                <i class="fas fa-times"></i> No
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="q${q.id}" id="q${q.id}_pending" value="pending">
+                            <label class="btn btn-outline-warning" for="q${q.id}_pending">
+                                <i class="fas fa-clock"></i> Pending
+                            </label>
+                        </div>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        // Handle form submission
+        document.getElementById('checklistForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const responses = [];
+                const questionItems = document.querySelectorAll('.question-item');
+
+                questionItems.forEach(item => {
+                    const questionId = item.dataset.questionId;
+                    const type = item.dataset.type;
+                    const questionText = item.dataset.question;
+                    
+                    if (type === 'written') {
+                        const answer = item.querySelector('textarea').value.trim();
+                        if (answer) {
+                            responses.push({
+                                question_id: parseInt(questionId),
+                                type: 'text',
+                                question_text: questionText,
+                                answer: answer
+                            });
+                        }
+                    } else {
+                        const selectedRadio = item.querySelector('input[type="radio"]:checked');
+                        responses.push({
+                            question_id: parseInt(questionId),
+                            type: 'mcq',
+                            question_text: questionText,
+                            status: selectedRadio ? selectedRadio.value : 'pending'
+                        });
+                    }
+                });
+
+                if (responses.length === 0) {
+                    throw new Error('Please answer at least one question');
+                }
+
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/checklist/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ responses })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Checklist submitted successfully!', 'success');
+                    document.getElementById('checklistForm').reset();
+                } else {
+                    throw new Error(data.message || 'Failed to submit checklist');
+                }
+            } catch (error) {
+                console.error('Error submitting checklist:', error);
+                showAlert(error.message || 'Failed to submit checklist', 'danger');
+            }
+        });
+
+        // Show user view (checklist form)
+        function showUserView() {
+            document.getElementById('userView').style.display = 'block';
+            document.getElementById('adminView').style.display = 'none';
+            // Update active nav
+            document.querySelector('.nav-link.active').classList.remove('active');
+            document.querySelector('a[onclick*="showUserView"]').classList.add('active');
+        }
+
+        // Show admin view (responses)
+        async function showAdminView() {
+            document.getElementById('userView').style.display = 'none';
+            document.getElementById('adminView').style.display = 'block';
+            // Update active nav
+            document.querySelector('.nav-link.active').classList.remove('active');
+            document.querySelector('a[onclick*="showAdminView"]').classList.add('active');
+            // Load responses
+            await loadResponses();
+        }
+
+        // Load responses for admin view
+        async function loadResponses() {
+            try {
+                const response = await fetch('/api/checklist/latest', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                
+                if (!data.success) {
+                    showAlert(data.message || 'Failed to load responses', 'danger');
+                    return;
+                }
+
+                displayResponses(data);
+            } catch (error) {
+                console.error('Error loading responses:', error);
+                showAlert('Failed to load responses', 'danger');
+            }
+        }
+
+        // Display responses in admin view
+        function displayResponses(data) {
+            if (!data.byStatus || !data.writtenResponses) {
+                showAlert('Invalid response format', 'danger');
+                return;
+            }
+
+            const { byStatus, writtenResponses } = data;
+            
+            // Display MCQ responses by status
+            displayStatusResponses('yesResponses', byStatus.yes || [], 'Yes');
+            displayStatusResponses('noResponses', byStatus.no || [], 'No');
+            displayStatusResponses('pendingResponses', byStatus.pending || [], 'Pending');
+
+            // Display written responses by section
+            displayWrittenResponses('kitchenWrittenResponses', writtenResponses.Kitchen || []);
+            displayWrittenResponses('cafeWrittenResponses', writtenResponses.Cafe || []);
+
+            // Add event listeners for response type toggle
+            document.querySelectorAll('input[name="responseType"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const mcqSection = document.getElementById('mcqResponsesSection');
+                    const writtenSection = document.getElementById('writtenResponsesSection');
+                    
+                    if (e.target.value === 'mcq') {
+                        mcqSection.style.display = 'block';
+                        writtenSection.style.display = 'none';
+                    } else {
+                        mcqSection.style.display = 'none';
+                        writtenSection.style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // Display written responses
+        function displayWrittenResponses(containerId, responses) {
+            const container = document.getElementById(containerId);
+            if (!responses || responses.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No written responses found.</div>';
+                return;
+            }
+
+            let html = '';
+            responses.forEach(response => {
+                const date = new Date(response.time);
+                html += `
+                    <div class="card mb-3" data-response-id="${response.id}">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">Question: ${response.question}</h5>
+                                    <div class="text-muted small">
+                                        <strong>Employee:</strong> ${response.employee}<br>
+                                        <strong>Branch:</strong> ${response.branch}<br>
+                                        <strong>Submitted:</strong> ${date.toLocaleString()}
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="deleteResponse(${response.id})">Delete</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">${response.answer}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Display MCQ status responses
+        function displayStatusResponses(containerId, responses, status) {
+            const container = document.getElementById(containerId);
+            if (!responses || responses.length === 0) {
+                container.innerHTML = `<div class="alert alert-info">No ${status} responses found.</div>`;
+                return;
+            }
+
+            let html = '';
+            responses.forEach(response => {
+                const date = new Date(response.time);
+                html += `
+                    <div class="card mb-3" data-response-id="${response.id}">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">${response.section} - ${response.question}</h5>
+                                    <div class="text-muted small">
+                                        <strong>Employee:</strong> ${response.employee}<br>
+                                        <strong>Branch:</strong> ${response.branch}<br>
+                                        <strong>Submitted:</strong> ${date.toLocaleString()}
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="deleteResponse(${response.id})">Delete</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <span class="badge bg-${getStatusColor(response.status)}">${response.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Get status color for badges
+        function getStatusColor(status) {
+            switch (status) {
+                case 'yes': return 'success';
+                case 'no': return 'danger';
+                case 'pending': return 'warning';
+                default: return 'secondary';
+            }
+        }
+
+        // Delete response (admin only)
+        async function deleteResponse(responseId) {
+            if (!confirm('Are you sure you want to delete this response?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/checklist/response/${responseId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Response deleted successfully', 'success');
+                    loadResponses(); // Reload all responses
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting response:', error);
+                showAlert('Failed to delete response', 'danger');
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alert = document.getElementById('alertMessage');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>

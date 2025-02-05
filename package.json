@@ -1,0 +1,23 @@
+{
+  "name": "employee-api",
+  "version": "1.0.0",
+  "description": "A simple API for managing employees",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "employee-api": "file:",
+    "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
+    "mssql": "^11.0.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.11.5"
+  },
+  "author": "",
+  "license": "ISC"
+}
